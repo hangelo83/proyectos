@@ -100,19 +100,34 @@
         .header-bar { height: 6px; width: 100%; }
         .hidden { display: none !important; }
 
-        /* --- MODO OSCURO --- */
+        /* --- MODO OSCURO MEJORADO --- */
         body.dark { background-color: #111827; color: #9CA3AF; }
         body.dark .text-title { color: #019DF4; }
         body.dark .text-large, body.dark h2, body.dark h3, body.dark p.text-gray-800, body.dark span.text-gray-500 { color: #F3F4F6 !important; }
         body.dark .text-normal { color: #F3F4F6 !important; } /* Texto normal a blanco */
-        body.dark .color-primary { color: #019DF4 !important; } /* Mantiene enlaces azules */
-        body.dark .color-secondary { color: #5CB615 !important; } /* Mantiene textos verdes */
-        body.dark .color-accent { color: #E63780 !important; } /* Mantiene alertas rosas */
+        body.dark .color-primary { color: #019DF4 !important; } 
+        body.dark .color-secondary { color: #5CB615 !important; } 
+        body.dark .color-accent { color: #E63780 !important; } 
+
+        /* Fondos generales y de tarjetas */
         body.dark .bg-white { background-color: #1F2937 !important; border-color: #374151 !important; }
         body.dark .project-rect { background-color: #1F2937; border-color: #374151; }
         body.dark .project-rect:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
         body.dark .detail-container { background-color: #1F2937; border-color: #374151; }
         body.dark .border-b, body.dark .border-\[\#E2E8F0\] { border-color: #374151 !important; }
+
+        /* MEJORA 1: Fondos activos transparentes en lugar de pasteles sólidos */
+        body.dark .project-rect.active.theme-accent { background-color: rgba(230, 55, 128, 0.15) !important; border-color: #E63780 !important; }
+        body.dark .project-rect.active.theme-secondary { background-color: rgba(92, 182, 21, 0.15) !important; border-color: #5CB615 !important; }
+        body.dark .project-rect.active.theme-primary { background-color: rgba(1, 157, 244, 0.15) !important; border-color: #019DF4 !important; }
+        body.dark .project-rect.active.theme-neutral { background-color: rgba(134, 136, 140, 0.15) !important; border-color: #86888C !important; }
+
+        /* MEJORA 2: Como el fondo vuelve a ser oscuro, los títulos activos vuelven a ser blancos */
+        body.dark .project-rect.active p.text-gray-800 { color: #F3F4F6 !important; } 
+
+        /* MEJORA 3: Suavizar el brillo de los Badges dinámicos en la noche */
+        body.dark .badge { filter: brightness(0.85) contrast(1.1); }
+
         body.dark .sub-tab { background-color: #374151; color: #9CA3AF; }
         body.dark .sub-tab.active { background-color: #019DF4; color: white; }
         body.dark .bg-soft-primary { background-color: rgba(1, 157, 244, 0.1) !important; }
@@ -120,7 +135,7 @@
         body.dark .bg-soft-accent { background-color: rgba(230, 55, 128, 0.1) !important; }
         body.dark .bg-soft-neutral { background-color: rgba(134, 136, 140, 0.1) !important; }
         body.dark .bg-\[\#E2E8F0\] { background-color: #374151 !important; }
-        body.dark #theme-toggle-btn { background-color: #374151; border-color: #4B5563; }
+        body.dark #theme-toggle-btn { background-color: #374151; border-color: #4B5563; color: #F3F4F6; }
         body.dark #theme-toggle-btn:hover { background-color: #4B5563; }
         body.dark code, body.dark #tec-bd { color: #E5E7EB !important; }
     </style>
@@ -133,8 +148,9 @@
             <div>
                 <div class="flex items-center gap-4">
                     <h1 class="text-title">Estado de proyectos</h1>
-                    <button onclick="toggleDarkMode()" id="theme-toggle-btn" class="p-2 rounded-full bg-white border border-[#E2E8F0] shadow-sm hover:bg-gray-100 transition-colors" title="Cambiar modo de visualización">
+                    <button onclick="toggleDarkMode()" id="theme-toggle-btn" class="px-4 py-2 rounded-full bg-white border border-[#E2E8F0] shadow-sm hover:bg-gray-100 transition-colors flex items-center gap-2 text-gray-600" title="Cambiar modo de visualización">
                         <span id="theme-icon">🌙</span>
+                        <span id="theme-text" class="text-sm font-bold">Modo noche</span>
                     </button>
                 </div>
                 <p class="text-normal mt-1">Selecciona un proyecto para ver detalles de negocio y técnicos.</p>
@@ -170,7 +186,10 @@
             <div class="p-6 border-b border-[#E2E8F0] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
                 <div>
                     <p id="active-project-area" class="text-small color-accent font-bold mb-1">ÁREA</p>
-                    <h2 class="text-large" id="active-project-title">Título del Proyecto</h2>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-large" id="active-project-title">Título del Proyecto</h2>
+                        <div id="active-project-icons" class="flex gap-1"></div>
+                    </div>
                     <!-- Contenedor para mostrar las etiquetas del proyecto activo -->
                     <div id="active-project-tags" class="mt-2 flex flex-wrap gap-1"></div>
                 </div>
@@ -184,6 +203,12 @@
 
             <!-- Contenido: NEGOCIO -->
             <div id="content-negocio" class="p-6">
+                <!-- Caja Superior Ancha (Contexto replicado de BD) -->
+                <div class="border border-[#86888C] border-opacity-30 p-5 rounded-xl bg-soft-neutral shadow-sm mb-8">
+                    <p class="text-small mb-2 text-[#86888C] font-bold">Contexto del Proyecto</p>
+                    <p id="negocio-descripcion" class="text-normal text-gray-800 break-words"></p>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div>
                         <h3 class="text-small font-bold color-primary mb-4 flex items-center gap-2">
@@ -231,11 +256,20 @@
                         </div>
                     </div>
                     
-                    <!-- Caja Inferior Ancha (Ahora Base de Datos) -->
-                    <div class="border border-[#E2E8F0] p-5 rounded-xl bg-white shadow-sm">
-                        <p class="text-small mb-1 font-bold text-gray-500">Base de Datos</p>
+                    <!-- Caja Inferior Ancha (Base de Datos) -->
+                    <div class="border border-[#86888C] border-opacity-30 p-5 rounded-xl bg-soft-neutral shadow-sm">
+                        <p class="text-small mb-2 text-[#86888C] font-bold">Base de Datos</p>
                         <p id="tec-bd" class="text-normal font-bold text-gray-800 break-words"></p>
                     </div>
+
+                    <!-- Caja Archivos Compartidos (Opcional) -->
+                    <div id="tec-archivos-container" class="border border-[#86888C] border-opacity-30 p-5 rounded-xl bg-soft-neutral shadow-sm hidden">
+                        <p class="text-small mb-3 text-[#86888C] font-bold">Archivos Compartidos</p>
+                        <div id="tec-archivos" class="flex flex-col gap-3">
+                            <!-- Los enlaces dinámicos se inyectan aquí -->
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -269,10 +303,13 @@
             'Claudio':     { texto: 'Claudio Escobar',      bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
             'Valeska':     { texto: 'Valeska Ríos',         bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
             'Jannete':     { texto: 'Jannete Carter',       bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
-            'Angelica':    { texto: 'Angela Trejos',        bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+            'Angela':    { texto: 'Angela Trejos',        bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
             'Teresa':      { texto: 'Teresa Galleguillos',  bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
             'Michael':     { texto: 'Michael Fuentes',      bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
             'Alejandro':   { texto: 'Alejandro Paredes',    bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+
+            'Reporte':   { texto: 'Reporte Web',         bg: '#ddbff5', color: '#9c60cc', border: '#9c60cc' },
+            'Flujo':     { texto: 'Flujo de trabajo',    bg: '#ddbff5', color: '#9c60cc', border: '#9c60cc' },
 
         };
 
@@ -283,23 +320,29 @@
         const projectData = {
             p1: {
                 theme: "accent", area: "Logística", title: "Devolución Pago Previo",
-                etiquetas: ['Validación','retrasado', 'Logistica','Rodrigo','Eduardo','Pato','Jona'],
+                etiquetas: ['Validación','retrasado', 'Logistica','Rodrigo','Eduardo','Pato','Jona','Flujo'],
                 alertaIcono: true, alertaTexto: "Pruebas retrasadas por falta de acceso VPN para Laura.",
                 contraparte: "Rodrigo Veloso / Eduardo Sotomayor (Reemp. Vacaciones)", contexto: "Jonathan Vidal / Patricio Martin",
+                descripcion: "Gestión de devoluciones de dinero a clientes. <br><br><b>Flujo:</b> ingresado ➡️ asignado ➡️ En Curso ➡️ Finalizado <br><br> Si metodo_pago es Transbank/Webpay no envia WSP a cliente pero debe permitir descargar archivo transbank al finalizar una orden. <BR><br> Si metodo_pago es distinto a Transbank/Webpay envia WSP en la trancicion Ingresado ➡️ Asignado y  En curso ➡️ Finalizado<br><br>⚠️⚠️⚠️⚠️Revisar antes de las pruebas que los numeros de telefonos esten a un numero especifico de prueba⚠️⚠️⚠️⚠️",
                 obs: ["Construcción finalizada el miércoles 10/02", 
                 "Plan de pruebas enviado el 11/02",
                 "Usuarios administradores configurados Laura y Eduardo (Clave por defecto 123456).", 
                 "El flujo incluye correo “flash” con envío diario de órdenes cerradas; temporalmente configurado para Pato, Gabriel, Jona y yo. Al finalizar pruebas, debe regularizarse a Reinaldo Baez y Ricardo Chacana (detalles técnicos en documento adjunto)."],
                 fuentes: "\\\\prd9003.tchile.local\\aplicaciones\\produccion\\devolucion_pago_previo", 
                 bd: "DEVOLUCION_PAGO_PREVIO", 
-                url: "http://10.184.136.20:8513/"
-                
+                url: "http://10.184.136.20:8513/",
+                // Nueva propiedad Opcional para Archivos Compartidos:
+                archivosCompartidos: [
+                    { texto: "FLujo Devolucion Pago Previo", url: "https://telefonicacorp-my.sharepoint.com/:i:/g/personal/angelo_flores_telefonica_com/IQBtH35F3itHS4UFWjKE6aijASEbG0QHLT6h1uHZJ8ry3dY?e=MJMK9h" },
+                    { texto: "Plan de pruebas (Excel)", url: "https://telefonicacorp-my.sharepoint.com/:x:/g/personal/angelo_flores_telefonica_com/IQADsA_0u8cwT7qH2kkV9kCXAV23ZQtOUpZBzNqhIjjjcMI?e=aPQBE0" }
+                ]
             },
             p2: {
                 theme: "secondary", area: "Recaudación", title: "Empresas Relacionadas",
-                etiquetas: ['Pausa', 'Desarrollo', 'Recaudacion', 'Claudio', 'Pato','Migracion'],
+                etiquetas: ['Pausa', 'Desarrollo', 'Recaudacion', 'Claudio', 'Pato','Migracion','Reporte'],
                 pausaIcono: true, alertaTexto: null,
                 contraparte: "Claudio Escobar", contexto: "Patricio Martin",
+                descripcion: "Contexto aca",
                 obs: ["60% avance en construcción.", 
                 "Claudio vuelve de vacaciones (Lunes 23).", 
                 "Se acuerda con él la entrega de nueva opción de mantenedores web “Empresas relacionadas” que será un listado de registros según el procesamiento de archivos.", 
@@ -309,9 +352,10 @@
                 fuentes: "Extractor: \\\\prd9003.tchile.local\\aplicaciones\\produccion\\empresas_relacionadas<br>Web: \\\\prd9003.tchile.local\\aplicaciones\\mantenedores_web\\pages\\6_empresas_relacionadas.py", bd: "[MANTENEDORES].[Empresas_relacionadas]", url: "http://10.184.136.20:8510/ <br>Opción: Empresas relacionadas"
             },
             p3: { theme: "neutral", area: "Recaudación", title: "FORCOB", 
-            etiquetas: ['Pausa', 'Desarrollo', 'Recaudacion', 'Claudio', 'Pato','Migracion'],
+            etiquetas: ['Pausa', 'Desarrollo', 'Recaudacion', 'Claudio', 'Pato','Migracion','Reporte'],
             pausaIcono: true, 
             contraparte: "Claudio Escobar", contexto: "Patricio Martin",
+            descripcion: "Contexto aca",
             obs: ["60% avance en construcción.", 
                 "Claudio vuelve de vacaciones (Lunes 23).", 
                 "Desarrolo queda en pausa acordada a la espera de la vuelta de mis vacaciones."],
@@ -320,9 +364,10 @@
 
             p4: {
                 theme: "primary", area: "Recaudación", title: "Mdr Transbank",
-                etiquetas: ['Finalizado', 'Recaudacion', 'Valeska', 'Pato','Migracion'],
+                etiquetas: ['Finalizado', 'Recaudacion', 'Valeska', 'Pato','Migracion','Reporte'],
                 FinalizadoIcono: true, alertaTexto: null,
                 contraparte: "Valeska Ríos", contexto: "Patricio Martin",
+                descripcion: "Contexto aca",
                 obs: ["Entrega desarrollo el 19/01", 
                 "Entrega de solicitud de mejoras 17/02", 
                 "BD utiliza credenciales asociada a cuenta de red. Por lo tanto no es posible ejecutar actualización automática desde servidor Azure. Según lo indicado por Valeska la actualización debe ser a fin de mes, por mi parte ejecutare el proceso en esa fecha para actualizar la data"],
@@ -333,9 +378,10 @@
 
             p5: {
                 theme: "primary", area: "Recaudación", title: "Liquidación Portadores",
-                etiquetas: ['Finalizado', 'Recaudacion', 'Jannete', 'Pato','Migracion'],
+                etiquetas: ['Finalizado', 'Recaudacion', 'Jannete', 'Pato','Migracion','Reporte'],
                 FinalizadoIcono: true, alertaTexto: null,
                 contraparte: "Jannete Carter", contexto: "Patricio Martin",
+                descripcion: "Contexto aca",
                 obs: ["Entrega desarrollo el 15/01", 
                 "Sitio actualmente en uso, sin observaciones. Sin embargo, Jannet se encuentra con licencia y en su regreso quizás pueda sugerir mejorar algún punto", 
                 ],
@@ -346,9 +392,10 @@
 
             p6: {
                 theme: "primary", area: "Recaudación", title: "Liquidación Seguros",
-                etiquetas: ['Finalizado', 'Recaudacion', 'Jannete', 'Pato','Migracion'],
+                etiquetas: ['Finalizado', 'Recaudacion', 'Jannete', 'Pato','Migracion','Reporte'],
                 FinalizadoIcono: true, alertaTexto: null,
                 contraparte: "Jannete Carter", contexto: "Patricio Martin",
+                descripcion: "Contexto aca",
                 obs: ["Entrega desarrollo el 15/01", 
                 "Sitio actualmente en uso, sin observaciones. Sin embargo, Jannet se encuentra con licencia y en su regreso quizás pueda sugerir mejorar algún punto", 
                 ],
@@ -360,9 +407,10 @@
 
             p7: {
                 theme: "primary", area: "Soporte Comercial", title: "Gestión ordenes Portabilidad",
-                etiquetas: ['Finalizado', 'Soporte', 'Michael', 'Pato'],
+                etiquetas: ['Finalizado', 'Soporte', 'Michael', 'Pato','Flujo'],
                 FinalizadoIcono: true, alertaTexto: null,
                 contraparte: "Michael Fuentes / María Elena Zamorano", contexto: "Patricio Martin",
+                descripcion: "Contexto aca",
                 obs: ["Inicio marcha blanca 22-01", 
                 "Solicitud de cambio entregado 11-02 (regularización ordenes masivas), pendiente revisión Michael", 
                 "Sitio actualmente en uso, sin observaciones"
@@ -376,9 +424,10 @@
 
             p8: {
                 theme: "primary", area: "Soporte Comercial", title: "Back Regulatorio",
-                etiquetas: ['Pausa', 'Soporte', 'Alejandro', 'Normal'],
+                etiquetas: ['Pausa', 'Soporte', 'Alejandro', 'Normal','Flujo'],
                 pausaIcono: true, alertaTexto: null,
                 contraparte: "Alejandro Paredes", contexto: "Norman Ramirez",
+                descripcion: "Contexto aca",
                 obs: ["Propuesta Entregada con buena aceptación", 
                 "Analista del equipo nos comparte un PowerBi con métricas de interés para ellos, pendiente por parte nuestra incluir estas métricas para robustecer la propuesta.", 
                 "Actualmente el equipo del back trabaja sobre planillas y PowerBI por lo que nuestra web tuvo buena recepción y complementa el trabajo de ellos.",
@@ -394,9 +443,10 @@
 
             p9: {
                 theme: "primary", area: "Soporte Comercial", title: "Casos Comerciales",
-                etiquetas: ['Finalizado', 'Soporte', 'Angela','Teresa', 'Pato'],
+                etiquetas: ['Finalizado', 'Soporte', 'Angela','Teresa', 'Pato','Flujo'],
                 FinalizadoIcono: true, alertaTexto: null,
                 contraparte: "Angela Trejos / Teresa Galleguillos", contexto: "Patricio Martin",
+                descripcion: "Contexto aca",
                 obs: ["Desarrollo Finalizado y operativo sin observaciones. ", 
                 "Sin embargo, solo dejo accesos e información en caso de alguna contingencia ", 
                 "⚠️No aplicar cambios durante el día dado que ejecutivos se encuentran trabajando en el sitio ", 
@@ -596,6 +646,22 @@
             areaEl.style.color = themeColors[data.theme];
             document.getElementById('active-project-title').innerText = data.title;
             
+            // Generar los iconos para el detalle del proyecto activo
+            let detailIconsHtml = '';
+            if (data.alertaIcono) {
+                detailIconsHtml += `<div class="text-[#E63780]" title="Atención requerida"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>`;
+            }
+            if (data.pausaIcono) {
+                detailIconsHtml += `<div class="text-yellow-500" title="En Pausa"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>`;
+            }
+            if (data.FinalizadoIcono) {
+                detailIconsHtml += `<div class="text-[#5CB615]" title="Finalizado"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>`;
+            }
+            if (data.DEsarrolloIcono) {
+                detailIconsHtml += `<div class="text-[#019DF4]" title="En Desarrollo / Trabajo"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></div>`;
+            }
+            document.getElementById('active-project-icons').innerHTML = detailIconsHtml;
+            
             // Pintar las etiquetas en el detalle
             let tagsDetailHtml = '';
             if (data.etiquetas) {
@@ -609,6 +675,8 @@
             document.getElementById('active-project-tags').innerHTML = tagsDetailHtml;
 
             // Construir Negocio
+            document.getElementById('negocio-descripcion').innerHTML = data.descripcion || 'Contexto aca';
+
             let obsHtml = '';
             if(data.alertaTexto) {
                 obsHtml += `<div class="p-4 bg-soft-accent border border-[#E63780] rounded-lg mb-4">
@@ -654,6 +722,29 @@
                 if (btnContainer) {
                     btnContainer.style.display = 'none'; // Lo oculta forzosamente en todos lados
                 }
+            }
+
+            // Archivos Compartidos (Opcional)
+            const archivosContainer = document.getElementById('tec-archivos-container');
+            const archivosEl = document.getElementById('tec-archivos');
+            
+            if (data.archivosCompartidos && data.archivosCompartidos.length > 0) {
+                let archivosHtml = '';
+                data.archivosCompartidos.forEach(archivo => {
+                    archivosHtml += `
+                        <a href="${archivo.url}" target="_blank" class="text-normal color-primary underline font-bold flex items-center gap-2 hover:opacity-80 transition-opacity">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                            ${archivo.texto}
+                        </a>
+                    `;
+                });
+                archivosEl.innerHTML = archivosHtml;
+                archivosContainer.classList.remove('hidden');
+            } else {
+                archivosContainer.classList.add('hidden');
+                archivosEl.innerHTML = '';
             }
 
             switchSubTab('negocio');
@@ -708,6 +799,7 @@
             document.body.classList.toggle('dark');
             const isDark = document.body.classList.contains('dark');
             document.getElementById('theme-icon').innerText = isDark ? '☀️' : '🌙';
+            document.getElementById('theme-text').innerText = isDark ? 'Modo día' : 'Modo noche';
             localStorage.setItem('darkMode', isDark); // Guarda tu preferencia en el navegador
         }
 
@@ -715,6 +807,7 @@
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark');
             document.getElementById('theme-icon').innerText = '☀️';
+            document.getElementById('theme-text').innerText = 'Modo día';
         }
 
         // INICIALIZACIÓN DE LA APLICACIÓN
