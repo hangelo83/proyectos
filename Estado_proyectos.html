@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyectos - Angelo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #111827; /* Cambiado a negro/oscuro para mejor contraste en modo día */
+            background-color: #f4f7f9;
+        }
+        .text-title { font-size: 36px; font-weight: bold; color: #019DF4; line-height: 1.2; }
+        .text-large { font-size: 24px; font-weight: bold; color: #333; }
+        .text-normal { font-size: 16px; color: #111827; } /* Cambiado de #86888C a negro/oscuro */
+        .text-small { font-size: 10px; color: #86888C; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Colores Estrictos de tu Paleta */
+        .color-primary { color: #019DF4; }
+        .color-secondary { color: #5CB615; }
+        .color-accent { color: #E63780; }
+
+        .bg-soft-primary { background-color: #F0FAFF; }
+        .bg-soft-secondary { background-color: #F0FDF4; }
+        .bg-soft-accent { background-color: #FFF0F5; }
+        .bg-soft-neutral { background-color: #E2E8F0; }
+
+        /* Estilo base para los Rectángulos de Proyectos */
+        .project-rect {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 110px;
+        }
+        .project-rect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Bordes y fondos para cuando el rectángulo está activo (seleccionado) */
+        .project-rect.active.theme-accent { border: 2px solid #E63780; background-color: #FFF0F5; }
+        .project-rect.active.theme-secondary { border: 2px solid #5CB615; background-color: #F0FDF4; }
+        .project-rect.active.theme-primary { border: 2px solid #019DF4; background-color: #F0FAFF; }
+        .project-rect.active.theme-neutral { border: 2px solid #86888C; background-color: #E2E8F0; }
+
+        /* Estructura base para cualquier etiqueta (Badge) */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: bold;
+            width: fit-content;
+        }
+
+        /* Filtros dinámicos */
+        .filter-btn {
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+        }
+        .filter-btn:hover { opacity: 0.8; transform: scale(1.05); }
+        .filter-btn.active { opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transform: scale(1.02); }
+
+        /* Sub-pestañas */
+        .sub-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            background: #E2E8F0;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        .sub-tab.active {
+            background: #019DF4;
+            color: white;
+            box-shadow: 0 2px 4px rgba(1, 157, 244, 0.3);
+        }
+
+        .detail-container {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .header-bar { height: 6px; width: 100%; }
+        .hidden { display: none !important; }
+
+        /* --- MODO OSCURO MEJORADO --- */
+        body.dark { background-color: #111827; color: #9CA3AF; }
+        body.dark .text-title { color: #019DF4; }
+        body.dark .text-large, body.dark h2, body.dark h3, body.dark p.text-gray-800, body.dark span.text-gray-500 { color: #F3F4F6 !important; }
+        body.dark .text-normal { color: #F3F4F6 !important; } /* Texto normal a blanco */
+        body.dark .color-primary { color: #019DF4 !important; } 
+        body.dark .color-secondary { color: #5CB615 !important; } 
+        body.dark .color-accent { color: #E63780 !important; } 
+
+        /* Fondos generales y de tarjetas */
+        body.dark .bg-white { background-color: #1F2937 !important; border-color: #374151 !important; }
+        body.dark .project-rect { background-color: #1F2937; border-color: #374151; }
+        body.dark .project-rect:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
+        body.dark .detail-container { background-color: #1F2937; border-color: #374151; }
+        body.dark .border-b, body.dark .border-\[\#E2E8F0\] { border-color: #374151 !important; }
+
+        /* MEJORA 1: Fondos activos transparentes en lugar de pasteles sólidos */
+        body.dark .project-rect.active.theme-accent { background-color: rgba(230, 55, 128, 0.15) !important; border-color: #E63780 !important; }
+        body.dark .project-rect.active.theme-secondary { background-color: rgba(92, 182, 21, 0.15) !important; border-color: #5CB615 !important; }
+        body.dark .project-rect.active.theme-primary { background-color: rgba(1, 157, 244, 0.15) !important; border-color: #019DF4 !important; }
+        body.dark .project-rect.active.theme-neutral { background-color: rgba(134, 136, 140, 0.15) !important; border-color: #86888C !important; }
+
+        /* MEJORA 2: Como el fondo vuelve a ser oscuro, los títulos activos vuelven a ser blancos */
+        body.dark .project-rect.active p.text-gray-800 { color: #F3F4F6 !important; } 
+
+        /* MEJORA 3: Suavizar el brillo de los Badges dinámicos en la noche */
+        body.dark .badge { filter: brightness(0.85) contrast(1.1); }
+
+        body.dark .sub-tab { background-color: #374151; color: #9CA3AF; }
+        body.dark .sub-tab.active { background-color: #019DF4; color: white; }
+        body.dark .bg-soft-primary { background-color: rgba(1, 157, 244, 0.1) !important; }
+        body.dark .bg-soft-secondary { background-color: rgba(92, 182, 21, 0.1) !important; }
+        body.dark .bg-soft-accent { background-color: rgba(230, 55, 128, 0.1) !important; }
+        body.dark .bg-soft-neutral { background-color: rgba(134, 136, 140, 0.1) !important; }
+        body.dark .bg-\[\#E2E8F0\] { background-color: #374151 !important; }
+        body.dark #theme-toggle-btn { background-color: #374151; border-color: #4B5563; color: #F3F4F6; }
+        body.dark #theme-toggle-btn:hover { background-color: #4B5563; }
+        body.dark code, body.dark #tec-bd, body.dark #tec-task { color: #E5E7EB !important; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end">
+            <div>
+                <div class="flex items-center gap-4">
+                    <h1 class="text-title">Estado de proyectos</h1>
+                    <button onclick="toggleDarkMode()" id="theme-toggle-btn" class="px-4 py-2 rounded-full bg-white border border-[#E2E8F0] shadow-sm hover:bg-gray-100 transition-colors flex items-center gap-2 text-gray-600" title="Cambiar modo de visualización">
+                        <span id="theme-icon">🌙</span>
+                        <span id="theme-text" class="text-sm font-bold">Modo noche</span>
+                    </button>
+                </div>
+                <p class="text-normal mt-1">Selecciona un proyecto para ver detalles de negocio y técnicos.</p>
+            </div>
+            <div class="mt-4 md:mt-0 text-left bg-white p-3 rounded-lg border border-[#E2E8F0] shadow-sm w-full md:w-64">
+                <div class="flex justify-between mb-1 items-end">
+                    <span class="text-small font-bold color-primary">Progreso Vacaciones 🏖️</span>
+                    <span class="text-large" style="font-size: 16px; color: #333;" id="progress-text">0 de 10</span>
+                </div>
+                <div class="w-full bg-[#E2E8F0] rounded-full h-2.5 mb-1">
+                    <div class="bg-[#019DF4] h-2.5 rounded-full transition-all duration-1000" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <p class="text-[9px] text-gray-500 text-right uppercase tracking-wider font-bold">23 Feb - 6 Mar</p>
+            </div>
+        </header>
+
+        <!-- BARRA DE FILTROS (Se inyecta dinámicamente) -->
+        <div class="mb-6 flex flex-wrap gap-2 items-center" id="filter-container">
+            <!-- Los botones de filtro se generan aquí -->
+        </div>
+
+        <!-- GRID DE PROYECTOS (Se genera dinámicamente con JavaScript) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10" id="project-grid">
+            <!-- Los proyectos se inyectarán aquí -->
+        </div>
+
+        <!-- SECCIÓN DE DETALLE DINÁMICO -->
+        <div id="project-detail-area" class="detail-container hidden">
+            <!-- Barra de color dinámica -->
+            <div id="detail-color-bar" class="header-bar bg-accent"></div>
+
+            <!-- Header del Detalle Seleccionado -->
+            <div class="p-6 border-b border-[#E2E8F0] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
+                <div>
+                    <p id="active-project-area" class="text-small color-accent font-bold mb-1">ÁREA</p>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-large" id="active-project-title">Título del Proyecto</h2>
+                        <div id="active-project-icons" class="flex gap-1"></div>
+                    </div>
+                    <!-- Contenedor para mostrar las etiquetas del proyecto activo -->
+                    <div id="active-project-tags" class="mt-2 flex flex-wrap gap-1"></div>
+                </div>
+                
+                <!-- Sub-pestañas -->
+                <div class="flex gap-2 mt-4 md:mt-0">
+                    <button onclick="switchSubTab('negocio')" id="sub-btn-negocio" class="sub-tab active">Detalle Negocio</button>
+                    <button onclick="switchSubTab('tecnico')" id="sub-btn-tecnico" class="sub-tab">Detalle Técnico</button>
+                </div>
+            </div>
+
+            <!-- Contenido: NEGOCIO -->
+            <div id="content-negocio" class="p-6">
+                <!-- Caja Superior Ancha (Contexto replicado de BD) -->
+                <div class="border border-[#86888C] border-opacity-30 p-5 rounded-xl bg-soft-neutral shadow-sm mb-8">
+                    <p class="text-small mb-2 text-[#86888C] font-bold">Contexto del Proyecto</p>
+                    <p id="negocio-descripcion" class="text-normal text-gray-800 break-words"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div>
+                        <h3 class="text-small font-bold color-primary mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-[#019DF4]"></span> Información de Equipo
+                        </h3>
+                        <div id="negocio-contexto" class="space-y-4 text-normal bg-soft-primary p-4 rounded-xl border border-[#019DF4] border-opacity-20">
+                            <!-- Inyectado por JS -->
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-small font-bold color-accent mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-[#E63780]"></span> Estatus y Observaciones
+                        </h3>
+                        <div id="negocio-observaciones" class="space-y-4 text-normal">
+                            <!-- Inyectado por JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido: TÉCNICO -->
+            <div id="content-tecnico" class="p-6 hidden">
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Caja Azul (Directorio de Fuentes) -->
+                        <div class="border border-[#019DF4] border-opacity-30 p-5 rounded-xl bg-soft-primary shadow-sm">
+                            <p class="text-small mb-2 color-primary font-bold">Directorio de Fuentes</p>
+                            <code id="tec-fuentes" class="text-normal break-all font-mono text-gray-700"></code>
+                        </div>
+                        <!-- Caja Verde (Ahora con estilo Azul - URL de Acceso) -->
+                        <div class="border border-[#019DF4] border-opacity-30 p-5 rounded-xl bg-soft-primary shadow-sm flex flex-col justify-between">
+                            
+                            <div>
+                                <p class="text-small mb-2 color-primary font-bold">URL de Acceso Web</p>
+                                <a id="tec-url" href="#" target="_blank" class="text-normal color-primary underline font-bold break-all"></a>
+                            </div>
+                            
+                            <!-- Botón: Se muestra en PC (md:block), se oculta en celular (hidden) -->
+                            <div id="tec-btn-container" class="mt-4 hidden md:block">
+                                <a id="tec-btn-url" href="#" target="_blank" class="inline-block bg-[#019DF4] text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-[#007cbd] transition-colors shadow-md text-center">
+                                    Abrir Aplicación
+                                </a>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Caja Inferior Izquierda (Base de Datos con estilo Azul) -->
+                        <div class="border border-[#019DF4] border-opacity-30 p-5 rounded-xl bg-soft-primary shadow-sm">
+                            <p class="text-small mb-2 color-primary font-bold">Base de Datos</p>
+                            <p id="tec-bd" class="text-normal font-bold text-gray-800 break-words"></p>
+                        </div>
+
+                        <!-- Caja Inferior Derecha (Task Scheduler con estilo Azul) -->
+                        <div class="border border-[#019DF4] border-opacity-30 p-5 rounded-xl bg-soft-primary shadow-sm">
+                            <p class="text-small mb-2 color-primary font-bold">Task Scheduler</p>
+                            <!-- Se eliminó 'font-bold' de la siguiente línea -->
+                            <p id="tec-task" class="text-normal text-gray-800 break-words"></p>
+                        </div>
+                    </div>
+
+                    <!-- Caja Archivos Compartidos (Opcional - Ahora con estilo Azul) -->
+                    <div id="tec-archivos-container" class="border border-[#019DF4] border-opacity-30 p-5 rounded-xl bg-soft-primary shadow-sm hidden">
+                        <p class="text-small mb-3 color-primary font-bold">Archivos Compartidos</p>
+                        <div id="tec-archivos" class="flex flex-col gap-3">
+                            <!-- Los enlaces dinámicos se inyectan aquí -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. CONFIGURACIÓN DE ETIQUETAS (TAGS)
+        // Puedes agregar todas las que quieras, aparecerán automáticamente en el filtro.
+        // =========================================================================
+        const CONFIG_ETIQUETAS = {
+            'retrasado':   { texto: 'Pruebas Retrasadas', bg: '#FFF0F5', color: '#E63780', border: '#E63780' },
+            'Pausa':       { texto: 'Pausa Acordada',   bg: '#f5eb8e', color: '#9c8c05', border: '#9c8c05' },
+            'Migracion':   { texto: 'Pend. Migración Servidor RECCA',   bg: '#d2fae6', color: '#86a394', border: '#86a394' },
+            
+            'Logistica':    { texto: 'Logistica',   bg: '#F0FAFF', color: '#019DF4', border: '#019DF4' },
+            'Recaudacion':  { texto: 'Recaudación', bg: '#F0FAFF', color: '#019DF4', border: '#019DF4' },
+            'Soporte':      { texto: 'Soporte Comercial',     bg: '#F0FAFF', color: '#019DF4', border: '#019DF4' },
+            
+            'Desarrollo':  { texto: 'En Desarrollo',   bg: '#e3cc07', color: '#FFFFFF', border: '#e3cc07' },
+            'Validación':  { texto: 'En Validación',   bg: '#e39207', color: '#FFFFFF', border: '#e39207' },
+            'Finalizado':  { texto: 'Finalizado',   bg: '#33b519', color: '#FFFFFF', border: '#33b519' },            
+            
+
+            'Pato':        { texto: 'Pato',    bg: '#F0FDF4', color: '#5CB615', border: '#5CB615' },
+            'Jona':        { texto: 'Jona',    bg: '#F0FDF4', color: '#5CB615', border: '#5CB615' },
+            'Norman':      { texto: 'Norman',  bg: '#F0FDF4', color: '#5CB615', border: '#5CB615' },
+
+            'Eduardo':     { texto: 'Eduardo Sotomayor',    bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+            'Rodrigo':     { texto: 'Rodrigo Veloso',       bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+            'Claudio':     { texto: 'Claudio Escobar',      bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+            'Valeska':     { texto: 'Valeska Ríos',         bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+            'Jannete':     { texto: 'Jannete Carter',       bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+            'Angela':    { texto: 'Angela Trejos',        bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+            'Teresa':      { texto: 'Teresa Galleguillos',  bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+            'Michael':     { texto: 'Michael Fuentes',      bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+            'Alejandro':   { texto: 'Alejandro Paredes',    bg: '#f5ddb0', color: '#d48c06', border: '#e69705' },
+
+            'Reporte':   { texto: 'Reporte Web',         bg: '#ddbff5', color: '#9c60cc', border: '#9c60cc' },
+            'Flujo':     { texto: 'Flujo de trabajo',    bg: '#ddbff5', color: '#9c60cc', border: '#9c60cc' },
+
+        };
+
+        // =========================================================================
+        // 2. BASE DE DATOS DE PROYECTOS
+        // Nuevos atributos de iconos: alertaIcono, pausaIcono, FinalizadoIcono, DEsarrolloIcono
+        // =========================================================================
+        const projectData = {
+            p1: {
+                theme: "accent", area: "Logística", title: "Devolución Pago Previo",
+                etiquetas: ['Validación','retrasado', 'Logistica','Rodrigo','Eduardo','Pato','Jona','Flujo'],
+                alertaIcono: true, alertaTexto: "Pruebas retrasadas por falta de acceso VPN para Laura.",
+                contraparte: "Rodrigo Veloso / Eduardo Sotomayor (Reemp. Vacaciones)", contexto: "Jonathan Vidal / Patricio Martin",
+                descripcion: "Gestión de devoluciones de dinero a clientes. <br><br><b>Flujo:</b> ingresado ➡️ asignado ➡️ En Curso ➡️ Finalizado <br><br> Si metodo_pago es Transbank/Webpay no envia WSP a cliente pero debe permitir descargar archivo transbank al finalizar una orden. <BR><br> Si metodo_pago es distinto a Transbank/Webpay envia WSP en la trancicion Ingresado ➡️ Asignado y  En curso ➡️ Finalizado<br><br>⚠️⚠️⚠️⚠️Revisar antes de las pruebas que los numeros de telefonos esten a un numero especifico de prueba⚠️⚠️⚠️⚠️",
+                obs: ["Construcción finalizada el miércoles 10/02", 
+                "Plan de pruebas enviado el 11/02",
+                "Usuarios administradores configurados Laura y Eduardo (Clave por defecto 123456).", 
+                "El flujo incluye correo “flash” con envío diario de órdenes cerradas; temporalmente configurado para Pato, Gabriel, Jona y yo. Al finalizar pruebas, debe regularizarse a Reinaldo Baez y Ricardo Chacana (detalles técnicos en documento adjunto)."],
+                fuentes: "\\\\prd9003.tchile.local\\aplicaciones\\produccion\\devolucion_pago_previo", 
+                bd: "DEVOLUCION_PAGO_PREVIO", 
+                taskScheduler: "<b>Start Streamlit devolucion_pago_previo</b>:<br>Mantiene sitio disponible<br>[Carpeta: Sitios]<br><br><b>Devolucion Pago Previo - Ejecucion Notificacion</b>:<br> Notificación estado ordenes<br>[Lunes a viernes 8:30am] [Carpeta: Sitios]<br><br><b>Devolucion Pago Previo - Ejecucion proceso importacion</b>:<br> Extracción datos desde I:\\aplicaciones\\produccion\\devolucion_pago_previo\procesos\\carga_devolucion_pago_previo.py<br>[Tabla Procesos.dbo.T_HIST_DEVO_RECA] <br>[Lunes a Domingo 9:00am] [Carpeta: Sitios]",
+                url: "http://10.184.136.20:8513/",
+                // Nueva propiedad Opcional para Archivos Compartidos:
+                archivosCompartidos: [
+                    { texto: "FLujo Devolucion Pago Previo", url: "https://telefonicacorp-my.sharepoint.com/:i:/g/personal/angelo_flores_telefonica_com/IQBtH35F3itHS4UFWjKE6aijASEbG0QHLT6h1uHZJ8ry3dY?e=MJMK9h" },
+                    { texto: "Plan de pruebas (Excel)", url: "https://telefonicacorp-my.sharepoint.com/:x:/g/personal/angelo_flores_telefonica_com/IQADsA_0u8cwT7qH2kkV9kCXAV23ZQtOUpZBzNqhIjjjcMI?e=aPQBE0" }
+                ]
+            },
+            p2: {
+                theme: "secondary", area: "Recaudación", title: "Empresas Relacionadas",
+                etiquetas: ['Pausa', 'Desarrollo', 'Recaudacion', 'Claudio', 'Pato','Migracion','Reporte'],
+                pausaIcono: true, alertaTexto: null,
+                contraparte: "Claudio Escobar", contexto: "Patricio Martin",
+                descripcion: "Reporte que recopila información de empresas ligadas a Telefonica con distinto rut para recaudación",
+                obs: ["60% avance en construcción.", 
+                "Claudio vuelve de vacaciones (Lunes 23).", 
+                "Se acuerda con él la entrega de nueva opción de mantenedores web “Empresas relacionadas” que será un listado de registros según el procesamiento de archivos.", 
+                "Desarrolo queda en pausa acordada a la espera de la vuelta de mis vacaciones.",
+                "Cierre de Febrero no es crítico, será manual."],
+
+                fuentes: "Extractor: \\\\prd9003.tchile.local\\aplicaciones\\produccion\\empresas_relacionadas<br>Web: \\\\prd9003.tchile.local\\aplicaciones\\mantenedores_web\\pages\\6_empresas_relacionadas.py", 
+                bd: "[MANTENEDORES].[Empresas_relacionadas]", 
+                taskScheduler: "<b>Mantenedores Web- Levantar Sttremlit a las 7 AM</b>:<br>Mantiene sitio disponible <br>[Carpeta: Sitios]",
+                url: "http://10.184.136.20:8510/ <br>Opción: Empresas relacionadas"
+            },
+            p3: { theme: "neutral", area: "Recaudación", title: "FORCOB", 
+            etiquetas: ['Pausa', 'Desarrollo', 'Recaudacion', 'Claudio', 'Pato','Migracion','Reporte'],
+            pausaIcono: true, 
+            contraparte: "Claudio Escobar", contexto: "Patricio Martin",
+            descripcion: "Automatización ForCob",
+            obs: ["60% avance en construcción.", 
+                "Claudio vuelve de vacaciones (Lunes 23).", 
+                "Desarrolo queda en pausa acordada a la espera de la vuelta de mis vacaciones."],
+
+            fuentes: "N/A", bd: "N/A", url: "#" },
+
+            p4: {
+                theme: "primary", area: "Recaudación", title: "Mdr Transbank",
+                etiquetas: ['Finalizado', 'Recaudacion', 'Valeska', 'Pato','Migracion','Reporte'],
+                FinalizadoIcono: true, alertaTexto: null,
+                contraparte: "Valeska Ríos", contexto: "Patricio Martin",
+                descripcion: "Informe que recopila información de transacciones por POS por distintos sucursales con el objetivo de cuadrar cargos hechos por Transbank.<br><br> ⚠️⚠️ Dado que proceso no es poible migrar aun a servidor Azure de RECCA, actualmente este proceso corre de desde mi equipo. Según lo acordado con Luis Sifontes, esto se mantendra asi por las siguientes dos semanas ejecutandose los lunes AM hasta mi regreso para continuar con la migracion ",
+                obs: ["Entrega desarrollo el 19/01", 
+                "Entrega de solicitud de mejoras 17/02", 
+                "BD utiliza credenciales asociada a cuenta de red. Por lo tanto no es posible ejecutar actualización automática desde servidor Azure. Según lo indicado por Valeska la actualización debe ser a fin de mes, por mi parte ejecutare el proceso en esa fecha para actualizar la data"],
+
+
+                fuentes: "Extractor de datos: Local<br>Web:\\\\prd9003.tchile.local\\aplicaciones\\mantenedores_web\\pages\\3_mdr_transbank.py", 
+                bd: "[MANTENEDORES].[LIQUIDACION_TRANSBANK_REP]", 
+                taskScheduler: "<b>Mantenedores Web- Levantar Sttremlit a las 7 AM</b>:<br>Mantiene sitio disponible<br>[Carpeta: Sitios]<br><br><b>Extracion de datos</b><br>[Tabla CONCILIACION..LIQUIDACION_TRANSBANK] <br>[Domingo 9:00am] [Local, pendiente migracion]",
+                url: "http://10.184.136.20:8510 <br>Opción: MDR Transbank"
+            },
+
+            p5: {
+                theme: "primary", area: "Recaudación", title: "Liquidación Portadores",
+                etiquetas: ['Finalizado', 'Recaudacion', 'Jannete', 'Pato','Migracion','Reporte'],
+                FinalizadoIcono: true, alertaTexto: null,
+                contraparte: "Jannete Carter", contexto: "Patricio Martin",
+                descripcion: "Reporte que recopila información diaria de pago de portadores. Proceso se ejecuta a las 9hrs. Si proceso no encuentra informacion en FTP de origen envia correos a usuarios configurados para alertar la situacion. Proceso previamente cuadrado y validado en cuanto a montos por Jannete Carter ",
+                obs: ["Entrega desarrollo el 15/01", 
+                "Sitio actualmente en uso, sin observaciones. Sin embargo, Jannet se encuentra con licencia y en su regreso quizás pueda sugerir mejorar algún punto", 
+                ],
+
+
+                fuentes: "Extractor de datos: Local<br>Web:\\\\prd9003.tchile.local\\aplicaciones\\mantenedores_web\\pages\\4_liquidacion_control_recaudadores.py", bd: "[MANTENEDORES].[actividades_financieras] Tipo Fuente: FijoFinAct", url: "http://10.184.136.20:8510 <br>Opción: Liquidación Portadores",
+                taskScheduler: "<b>Mantenedores Web- Levantar Sttremlit a las 7 AM</b>:<br>Mantiene sitio disponible<br>[Carpeta: Sitios]<br><br><b>Extracion de datos</b><br>Liquidacion Seguros - Ejecucion procesos carga DAT<br>Archivos FTP -> [Tabla actividades_financieras] <br>Proceso: produccion\liquidacion_seguros <br>[Lunes a Domingo 9:00am] [Carpeta: Sitios]",
+            },
+
+            p6: {
+                theme: "primary", area: "Recaudación", title: "Liquidación Seguros",
+                etiquetas: ['Finalizado', 'Recaudacion', 'Jannete', 'Pato','Migracion','Reporte'],
+                FinalizadoIcono: true, alertaTexto: null,
+                contraparte: "Jannete Carter", contexto: "Patricio Martin",
+                descripcion: "Reporte que recopila información diaria de pago de seguros. Proceso se ejecuta a las 9hrs. Si proceso no encuentra informacion en FTP de origen envia correos a usuarios configurados para alertar la situacion. Proceso previamente cuadrado y validado en cuanto a montos por Jannete Carter ",
+                obs: ["Entrega desarrollo el 15/01", 
+                "Sitio actualmente en uso, sin observaciones. Sin embargo, Jannet se encuentra con licencia y en su regreso quizás pueda sugerir mejorar algún punto", 
+                ],
+
+
+                fuentes: "Extractor de datos: Local<br>Web:\\\\prd9003.tchile.local\\aplicaciones\\mantenedores_web\\pages\\2_actividades_financieras.py", bd: "[MANTENEDORES].[actividades_financieras] Tipo Fuente: MobileFinAct301", url: "http://10.184.136.20:8510 <br>Opción: Liquidación Seguros",
+                taskScheduler: "<b>Mantenedores Web- Levantar Sttremlit a las 7 AM</b>:<br>Mantiene sitio disponible<br>[Carpeta: Sitios]<br><br><b>Extracion de datos</b><br>Liquidacion Seguros - Ejecucion procesos carga DAT<br>Archivos FTP -> [Tabla actividades_financieras] <br>Proceso: produccion\liquidacion_seguros <br>[Lunes a Domingo 9:00am] [Carpeta: Sitios]",
+            },
+
+
+            p7: {
+                theme: "primary", area: "Soporte Comercial", title: "Gestión ordenes Portabilidad",
+                etiquetas: ['Finalizado', 'Soporte', 'Michael', 'Pato','Flujo'],
+                FinalizadoIcono: true, alertaTexto: null,
+                contraparte: "Michael Fuentes / María Elena Zamorano", contexto: "Patricio Martin",
+                descripcion: "Gestión de ordenes que fueron rechazadas en el flujo de portabilidad. Sitio operativo y validado por Michael. Carga de datos de forma automatica a las 9hrs",
+                obs: ["Inicio marcha blanca 22-01", 
+                "Solicitud de cambio entregado 11-02 (regularización ordenes masivas), pendiente revisión Michael", 
+                "Sitio actualmente en uso, sin observaciones"
+                ],
+
+
+                fuentes: "Extractor de datos: <br>\\\\prd9003.tchile.local\\aplicaciones\\produccion\\casos_portabilidad\\procesos\\carga_rechazos_porta.py<br>WEB: <br>\\\\prd9003.tchile.local\\aplicaciones\\produccion\\casos_portabilidad", 
+                bd: "[SOPORTE_PORTABILIDAD]", url: "http://10.184.136.20:8512/",
+                taskScheduler: "<b>Start Streamlit Server_Casos_Portabilidad_produccion</b>:<br>Mantiene sitio disponible<br>[Carpeta: Sitios]<br><br><b>Soporte Portabilidad - Ejecucion notificacion</b>:<br> Notificación estado ordenes<br>[Lunes a viernes 8:20am] [Carpeta: Sitios]<br><br><b>Soporte Portabilidad - Ejecucion proceso importacion data</b><br>Proceso:\\\\prd9003.tchile.local\\aplicaciones\\produccion\\casos_portabilidad\\procesos\\carga_rechazos_porta.py <br>Procesos..T_WEB_PORTA -> dbo.Casos_gestion_Registros<br>[Lunes a viernes a las 8:30] <br><br><b>Soporte Portabilidad - Ejecucion notificacion</b><br>Notificacion estado ordenes<br>[Ejecucion Lunes a viernes 8:20AM]",
+            },
+
+
+            p8: {
+                theme: "primary", area: "Soporte Comercial", title: "Back Regulatorio",
+                etiquetas: ['Pausa', 'Soporte', 'Alejandro', 'Normal','Flujo'],
+                pausaIcono: true, alertaTexto: null,
+                contraparte: "Alejandro Paredes", contexto: "Norman Ramirez",
+                descripcion: "Propuesta de Dashboard, alertas diarias y reporte ejecutivo de KPI's claves para mejoras de rendimiento en el equipo de Back regulartrio. Este equipo se encarga de resolver reclamos enviados por clientes vía SENAC. ",
+                obs: ["Propuesta Entregada con buena aceptación", 
+                "Analista del equipo nos comparte un PowerBi con métricas de interés para ellos, pendiente por parte nuestra incluir estas métricas para robustecer la propuesta.", 
+                "Actualmente el equipo del back trabaja sobre planillas y PowerBI por lo que nuestra web tuvo buena recepción y complementa el trabajo de ellos.",
+                "Según lo acordado con Norman y mencionado al equipo de Back, estas actualizaciones serán aplicadas en mi llegada"
+                ],
+
+
+                fuentes: "WEB: <br>Web:\\\\prd9003.tchile.local\\aplicaciones\\mantenedores_web\\pages\\5_reporte_ejecutivo.py", 
+                bd: "[WebRegulatoria]", 
+                url: "http://10.184.136.20:8510 <br>Opción: Back Regulatorio"
+                
+            },
+
+            p9: {
+                theme: "primary", area: "Soporte Comercial", title: "Casos Comerciales",
+                etiquetas: ['Finalizado', 'Soporte', 'Angela','Teresa', 'Pato','Flujo'],
+                FinalizadoIcono: true, alertaTexto: null,
+                contraparte: "Angela Trejos / Teresa Galleguillos", contexto: "Patricio Martin",
+                descripcion: "Gestión de casos comerciales mediante flujo de asignación a ejecutivos internos y externos. Sitio operativo sin observaciones",
+                obs: ["Desarrollo Finalizado y operativo sin observaciones. ", 
+                "Sin embargo, solo dejo accesos e información en caso de alguna contingencia ", 
+                "⚠️No aplicar cambios durante el día dado que ejecutivos se encuentran trabajando en el sitio ", 
+                ],
+
+
+                fuentes: "WEB: <br>Web:\\\\prd9003.tchile.local\\aplicaciones\\casos_comerciales", 
+                bd: "[SOPORTE_COMERCIAL]", 
+                taskScheduler: "<b>Start Streamlit Server_Casos_Comerciales</b>:<br>Mantiene sitio disponible<br>[Carpeta: Sitios]<br><br><b>Casos Comerciales - Ejecucion notificacion</b>:<br> Notificación estado ordenes<br>[Lunes a viernes 8:15am] [Carpeta: Sitios]",
+                url: "http://10.184.136.20:8501"
+                
+            }
+        };
+
+        const themeColors = { 'accent': '#E63780', 'secondary': '#5CB615', 'primary': '#019DF4', 'neutral': '#86888C' };
+
+        // =========================================================================
+        // 3. GENERACIÓN DINÁMICA DE FILTROS Y CUADRÍCULA
+        // =========================================================================
+        
+        let activeFilters = new Set(); // Almacena las etiquetas seleccionadas actualmente
+
+        function renderFilters() {
+            const container = document.getElementById('filter-container');
+            
+            // 1. Calcular contadores
+            const contadores = {};
+            let totalProyectos = Object.keys(projectData).length;
+
+            for (const key in CONFIG_ETIQUETAS) {
+                contadores[key] = 0;
+            }
+
+            // Recorrer proyectos y sumar a los contadores
+            for (const id in projectData) {
+                const data = projectData[id];
+                if (data.etiquetas && data.etiquetas.length > 0) {
+                    data.etiquetas.forEach(tag => {
+                        if (contadores[tag] !== undefined) {
+                            contadores[tag]++;
+                        } else {
+                            contadores[tag] = 1; // Por si hay etiquetas en proyectos no definidas en config
+                        }
+                    });
+                }
+            }
+
+            // Botón base "Todos"
+            let filtersHtml = `
+                <span class="text-small font-bold mr-2 text-gray-500 whitespace-nowrap">FILTRAR:</span>
+                <button onclick="toggleFilter('all')" id="filter-all" class="badge filter-btn active whitespace-nowrap" style="background-color: #4B5563; color: white; border: 1px solid #4B5563;">Todos (${totalProyectos})</button>
+            `;
+
+            // Iterar sobre las etiquetas configuradas y crear un botón para cada una
+            for (const [tagId, config] of Object.entries(CONFIG_ETIQUETAS)) {
+                let count = contadores[tagId] || 0;
+                filtersHtml += `
+                    <button onclick="toggleFilter('${tagId}')" id="filter-${tagId}" class="badge filter-btn whitespace-nowrap" style="background-color: ${config.bg}; color: ${config.color}; border: 1px solid ${config.border};">
+                        ${config.texto} (${count})
+                    </button>
+                `;
+            }
+
+            container.innerHTML = filtersHtml;
+        }
+
+        function renderProjects() {
+            const grid = document.getElementById('project-grid');
+            grid.innerHTML = ''; // Limpiar cuadrícula
+
+            for (const [id, data] of Object.entries(projectData)) {
+                
+                // Lógica de Filtrado Múltiple
+                if (activeFilters.size > 0) {
+                    // Lógica OR: Mostrar si el proyecto tiene AL MENOS UNA de las etiquetas seleccionadas.
+                    const hasMatch = data.etiquetas && [...activeFilters].some(tag => data.etiquetas.includes(tag));
+                    if (!hasMatch) {
+                        continue; // Saltar este proyecto si no coincide con los filtros
+                    }
+                }
+
+                // Generar HTML de las etiquetas combinadas
+                let tagsHtml = '';
+                if (data.etiquetas && data.etiquetas.length > 0) {
+                    data.etiquetas.forEach(tagId => {
+                        const tConf = CONFIG_ETIQUETAS[tagId];
+                        if (tConf) {
+                            tagsHtml += `<span class="badge mr-1 mt-1" style="background-color: ${tConf.bg}; color: ${tConf.color}; border: 1px solid ${tConf.border};">${tConf.texto}</span>`;
+                        }
+                    });
+                }
+
+                // Generar HTML de los iconos (Soporta múltiples iconos si fuera necesario)
+                let iconsHtml = '<div class="flex gap-1">';
+                if (data.alertaIcono) {
+                    iconsHtml += `
+                        <div class="text-[#E63780]" title="Atención requerida">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>`;
+                }
+                if (data.pausaIcono) {
+                    iconsHtml += `
+                        <div class="text-yellow-500" title="En Pausa">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>`;
+                }
+                if (data.FinalizadoIcono) {
+                    iconsHtml += `
+                        <div class="text-[#5CB615]" title="Finalizado">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>`;
+                }
+                if (data.DEsarrolloIcono) {
+                    iconsHtml += `
+                        <div class="text-[#019DF4]" title="En Desarrollo / Trabajo">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>`;
+                }
+                iconsHtml += '</div>';
+
+                // Construir la tarjeta (Rectángulo)
+                const cardHtml = `
+                    <div onclick="selectProject('${id}')" id="rect-${id}" class="project-rect theme-${data.theme}">
+                        <div class="flex justify-between items-start">
+                            <div class="w-full pr-2">
+                                <p class="text-small color-${data.theme} font-bold">${data.area}</p>
+                                <p class="font-bold text-gray-800 truncate text-[16px]" title="${data.title}">${data.title}</p>
+                            </div>
+                            ${iconsHtml}
+                        </div>
+                        <div class="mt-3 flex flex-wrap">
+                            ${tagsHtml}
+                        </div>
+                    </div>
+                `;
+                
+                grid.innerHTML += cardHtml;
+            }
+        }
+
+        // --- Lógica de Filtro Interactivo (Múltiple) ---
+        function toggleFilter(tagId) {
+            if (tagId === 'all') {
+                activeFilters.clear(); // Limpiar todos los filtros
+            } else {
+                if (activeFilters.has(tagId)) {
+                    activeFilters.delete(tagId); // Deseleccionar si ya estaba activo
+                } else {
+                    activeFilters.add(tagId); // Seleccionar la nueva etiqueta
+                }
+            }
+
+            // Actualizar clases visuales de los botones
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if (activeFilters.size === 0) {
+                // Si no hay nada seleccionado, encender "Todos"
+                document.getElementById('filter-all').classList.add('active');
+            } else {
+                // Encender solo los botones seleccionados
+                activeFilters.forEach(activeTag => {
+                    const btn = document.getElementById('filter-' + activeTag);
+                    if (btn) btn.classList.add('active');
+                });
+            }
+
+            // Volver a dibujar la grilla con los filtros aplicados
+            renderProjects();
+
+            // Ocultar detalle si estaba abierto
+            document.getElementById('project-detail-area').classList.add('hidden');
+            document.querySelectorAll('.project-rect').forEach(el => el.classList.remove('active'));
+        }
+
+        // --- Lógica de Selección de Proyecto ---
+        function selectProject(id) {
+            document.querySelectorAll('.project-rect').forEach(el => el.classList.remove('active'));
+            const rect = document.getElementById('rect-' + id);
+            if(rect) rect.classList.add('active');
+
+            document.getElementById('project-detail-area').classList.remove('hidden');
+
+            const data = projectData[id];
+            
+            // Textos y Colores del Encabezado
+            document.getElementById('detail-color-bar').style.backgroundColor = themeColors[data.theme];
+            const areaEl = document.getElementById('active-project-area');
+            areaEl.innerText = data.area.toUpperCase();
+            areaEl.style.color = themeColors[data.theme];
+            document.getElementById('active-project-title').innerText = data.title;
+            
+            // Generar los iconos para el detalle del proyecto activo
+            let detailIconsHtml = '';
+            if (data.alertaIcono) {
+                detailIconsHtml += `<div class="text-[#E63780]" title="Atención requerida"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>`;
+            }
+            if (data.pausaIcono) {
+                detailIconsHtml += `<div class="text-yellow-500" title="En Pausa"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>`;
+            }
+            if (data.FinalizadoIcono) {
+                detailIconsHtml += `<div class="text-[#5CB615]" title="Finalizado"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>`;
+            }
+            if (data.DEsarrolloIcono) {
+                detailIconsHtml += `<div class="text-[#019DF4]" title="En Desarrollo / Trabajo"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></div>`;
+            }
+            document.getElementById('active-project-icons').innerHTML = detailIconsHtml;
+            
+            // Pintar las etiquetas en el detalle
+            let tagsDetailHtml = '';
+            if (data.etiquetas) {
+                data.etiquetas.forEach(tagId => {
+                    const tConf = CONFIG_ETIQUETAS[tagId];
+                    if (tConf) {
+                        tagsDetailHtml += `<span class="badge" style="background-color: ${tConf.bg}; color: ${tConf.color}; border: 1px solid ${tConf.border};">${tConf.texto}</span>`;
+                    }
+                });
+            }
+            document.getElementById('active-project-tags').innerHTML = tagsDetailHtml;
+
+            // Construir Negocio
+            document.getElementById('negocio-descripcion').innerHTML = data.descripcion || 'Contexto aca';
+
+            let obsHtml = '';
+            if(data.alertaTexto) {
+                obsHtml += `<div class="p-4 bg-soft-accent border border-[#E63780] rounded-lg mb-4">
+                                <p class="color-accent font-bold mb-1">Alerta:</p>
+                                <p>${data.alertaTexto}</p>
+                            </div>`;
+            }
+            if(data.obs && data.obs.length > 0) {
+                obsHtml += `<div class="pl-3 border-l-2 border-[#E2E8F0] space-y-2">`;
+                data.obs.forEach(o => obsHtml += `<p>• ${o}</p>`);
+                obsHtml += `</div>`;
+            }
+
+            document.getElementById('negocio-contexto').innerHTML = `
+                <p><strong>Responsables:</strong> ${data.contraparte || 'N/A'}</p>
+                <p><strong>Contexto interno:</strong> ${data.contexto || 'N/A'}</p>
+            `;
+            document.getElementById('negocio-observaciones').innerHTML = obsHtml || '<p>Sin observaciones recientes.</p>';
+
+            // Técnico
+            document.getElementById('tec-fuentes').innerHTML = data.fuentes;
+            document.getElementById('tec-bd').innerText = data.bd;
+            // Se cambió innerText por innerHTML para procesar los <br>
+            document.getElementById('tec-task').innerHTML = data.taskScheduler || 'N/A';
+            
+            const urlEl = document.getElementById('tec-url');
+            const btnUrl = document.getElementById('tec-btn-url');
+            const btnContainer = document.getElementById('tec-btn-container');
+
+            if(data.url !== '#') {
+                urlEl.innerHTML = data.url; // Utilizamos innerHTML para procesar los <br>
+                // Para el atributo href, se extrae solo la porción antes del primer <br>
+                urlEl.href = data.url.split('<br>')[0].trim();
+                urlEl.classList.remove('text-gray-400');
+                urlEl.classList.add('color-primary', 'underline');
+                if (btnContainer && btnUrl) {
+                    btnUrl.href = data.url.split('<br>')[0].trim();
+                    btnContainer.style.display = ''; // Permite que CSS (Tailwind) decida si mostrarlo según la pantalla
+                }
+            } else {
+                urlEl.innerText = 'No disponible';
+                urlEl.removeAttribute('href');
+                urlEl.classList.add('text-gray-400');
+                urlEl.classList.remove('color-primary', 'underline');
+                if (btnContainer) {
+                    btnContainer.style.display = 'none'; // Lo oculta forzosamente en todos lados
+                }
+            }
+
+            // Archivos Compartidos (Opcional)
+            const archivosContainer = document.getElementById('tec-archivos-container');
+            const archivosEl = document.getElementById('tec-archivos');
+            
+            if (data.archivosCompartidos && data.archivosCompartidos.length > 0) {
+                let archivosHtml = '';
+                data.archivosCompartidos.forEach(archivo => {
+                    archivosHtml += `
+                        <a href="${archivo.url}" target="_blank" class="text-normal color-primary underline font-bold flex items-center gap-2 hover:opacity-80 transition-opacity">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                            ${archivo.texto}
+                        </a>
+                    `;
+                });
+                archivosEl.innerHTML = archivosHtml;
+                archivosContainer.classList.remove('hidden');
+            } else {
+                archivosContainer.classList.add('hidden');
+                archivosEl.innerHTML = '';
+            }
+
+            switchSubTab('negocio');
+            document.getElementById('project-detail-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function switchSubTab(type) {
+            if (type === 'negocio') {
+                document.getElementById('content-negocio').classList.remove('hidden');
+                document.getElementById('content-tecnico').classList.add('hidden');
+                document.getElementById('sub-btn-negocio').classList.add('active');
+                document.getElementById('sub-btn-tecnico').classList.remove('active');
+            } else {
+                document.getElementById('content-negocio').classList.add('hidden');
+                document.getElementById('content-tecnico').classList.remove('hidden');
+                document.getElementById('sub-btn-negocio').classList.remove('active');
+                document.getElementById('sub-btn-tecnico').classList.add('active');
+            }
+        }
+
+        function calculateProgress() {
+            const startDate = new Date(2026, 1, 23); // 23 Feb
+            const endDate = new Date(2026, 2, 6);    // 6 Mar
+            let today = new Date();
+            // today = new Date(2026, 1, 26); // Descomentar para probar visualización
+
+            let workingDaysPassed = 0;
+            const totalWorkingDays = 10;
+
+            if (today < startDate) { workingDaysPassed = 0; } 
+            else if (today > endDate) { workingDaysPassed = totalWorkingDays; } 
+            else {
+                let currentDate = new Date(startDate);
+                currentDate.setHours(0,0,0,0);
+                let limitDate = new Date(today);
+                limitDate.setHours(0,0,0,0);
+
+                while (currentDate <= limitDate) {
+                    const dayOfWeek = currentDate.getDay();
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) workingDaysPassed++;
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+
+            const percentage = (workingDaysPassed / totalWorkingDays) * 100;
+            setTimeout(() => { document.getElementById('progress-bar').style.width = percentage + '%'; }, 100);
+            document.getElementById('progress-text').innerText = workingDaysPassed + ' de ' + totalWorkingDays;
+        }
+
+        // --- Lógica del Modo Oscuro ---
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            document.getElementById('theme-icon').innerText = isDark ? '☀️' : '🌙';
+            document.getElementById('theme-text').innerText = isDark ? 'Modo día' : 'Modo noche';
+            localStorage.setItem('darkMode', isDark); // Guarda tu preferencia en el navegador
+        }
+
+        // Cargar preferencia de modo oscuro al iniciar
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            document.getElementById('theme-icon').innerText = '☀️';
+            document.getElementById('theme-text').innerText = 'Modo día';
+        }
+
+        // INICIALIZACIÓN DE LA APLICACIÓN
+        renderFilters();
+        renderProjects();
+        calculateProgress();
+
+    </script>
+</body>
+</html>
